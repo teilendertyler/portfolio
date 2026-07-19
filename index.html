@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- NEU: Anti-Flacker-Skript liest das Gedächtnis VOR dem Laden -->
+    <script>
+        const lastPage = localStorage.getItem('activePage') || 'portfolio';
+        const style = document.createElement('style');
+        style.innerHTML = '#' + lastPage + ' { display: block !important; }';
+        document.head.appendChild(style);
+    </script>
 </head>
 
 <body>
