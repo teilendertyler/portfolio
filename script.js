@@ -11,61 +11,60 @@ const gallery = document.querySelector('.gallery');
 const savedFilter = localStorage.getItem('activeFilter') || 'all';
 const savedPage = localStorage.getItem('activePage') || 'portfolio';
 
-// alle Bilder/Videos laden
-imagesLoaded(gallery, function() {
-    
-    // Den initialen Filter bauen, basierend auf dem gespeicherten Wert
-    const initialIsotopeFilter = savedFilter === 'all' ? '.item:not(.text-banner)' : `[data-category="${savedFilter}"]`;
+// --- NEU: Gespeicherte Werte aus dem Browser laden ---
+const savedFilter = localStorage.getItem('activeFilter') || 'all';
+const savedPage = localStorage.getItem('activePage') || 'portfolio';
+const initialIsotopeFilter = savedFilter === 'all' ? '.item:not(.text-banner)' : `[data-category="${savedFilter}"]`;
 
-    // Isotope initialisieren
-    var iso = new Isotope(gallery, {
-        itemSelector: '.item',
-        layoutMode: 'masonry', 
-        percentPosition: true, 
-        transitionDuration: 0, 
-        filter: initialIsotopeFilter, // Nutzt den gespeicherten Zustand!
-        masonry: {
-            columnWidth: '.grid-sizer', 
-            gutter: 0
-        }
-    });
-
-    // Die Filter-Buttons beim Laden richtig einfärben
-    filterButtons.forEach(btn => {
-        if (btn.getAttribute('data-filter') === savedFilter) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-
-    // Altes Coding-Banner beim Laden prüfen
-    const codingBanner = document.getElementById('coding-banner');
-    if (codingBanner) {
-        codingBanner.style.display = (savedFilter === 'coding') ? 'block' : 'none';
+// 1. Isotope SOFORT initialisieren (nicht auf den Download aller Bilder warten!)
+var iso = new Isotope(gallery, {
+    itemSelector: '.item',
+    layoutMode: 'masonry', 
+    percentPosition: true, 
+    transitionDuration: 0, 
+    filter: initialIsotopeFilter,
+    masonry: {
+        columnWidth: '.grid-sizer', 
+        gutter: 0
     }
-
-    // Klick-Event für die Filter-Buttons
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            const filterValue = button.getAttribute('data-filter');
-            
-            // --- NEU: DEN GEWÄHLTEN FILTER IM BROWSER SPEICHERN ---
-            localStorage.setItem('activeFilter', filterValue);
-
-            if (codingBanner) {
-                codingBanner.style.display = (filterValue === 'coding') ? 'block' : 'none';
-            }
-
-            const isotopeFilter = filterValue === 'all' ? '.item:not(.text-banner)' : `[data-category="${filterValue}"]`;
-            iso.arrange({ filter: isotopeFilter });
-        });
-    });
 });
 
+// 2. Das Raster bei JEDEM geladenen Bild aktualisieren (verhindert den "Hänger")
+imagesLoaded(gallery).on('progress', function() {
+    iso.layout();
+});
+
+// Die Filter-Buttons beim Laden richtig einfärben
+filterButtons.forEach(btn => {
+    if (btn.getAttribute('data-filter') === savedFilter) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+});
+
+const codingBanner = document.getElementById('coding-banner');
+if (codingBanner) {
+    codingBanner.style.display = (savedFilter === 'coding') ? 'block' : 'none';
+}
+
+// Klick-Event für die Filter-Buttons
+filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        const filterValue = button.getAttribute('data-filter');
+        localStorage.setItem('activeFilter', filterValue);
+
+        if (codingBanner) {
+            codingBanner.style.display = (filterValue === 'coding') ? 'block' : 'none';
+        }
+
+        const isotopeFilter = filterValue === 'all' ? '.item:not(.text-banner)' : `[data-category="${filterValue}"]`;
+        iso.arrange({ filter: isotopeFilter });
+    });
+});
 // --- SEITEN-NAVIGATION --- 
 const navButtons = document.querySelectorAll('.main-nav button');
 
