@@ -171,11 +171,3 @@ lightbox.addEventListener('click', (e) => {
         lightboxVideo.src = ''; 
     }
 });
-
-const logoLink = document.querySelector('.logo-link');
-if (logoLink) {
-    logoLink.addEventListener('click', () => {
-        localStorage.removeItem('activeFilter');
-        localStorage.removeItem('activePage');
-    });
-}
