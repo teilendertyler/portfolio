@@ -7,68 +7,60 @@ window.scrollTo(0, 0);
 const filterButtons = document.querySelectorAll('.filter-menu button');
 const gallery = document.querySelector('.gallery');
 
-// --- NEU: Gespeicherte Werte aus dem Browser laden (oder Standardwerte nutzen) ---
 const savedFilter = localStorage.getItem('activeFilter') || 'all';
 const savedPage = localStorage.getItem('activePage') || 'portfolio';
 
-// --- NEU: Gespeicherte Werte aus dem Browser laden ---
-const savedFilter = localStorage.getItem('activeFilter') || 'all';
-const savedPage = localStorage.getItem('activePage') || 'portfolio';
-const initialIsotopeFilter = savedFilter === 'all' ? '.item:not(.text-banner)' : `[data-category="${savedFilter}"]`;
+// alle Bilder/Videos laden
+imagesLoaded(gallery, function() {
+    
+    const initialIsotopeFilter = savedFilter === 'all' ? '.item:not(.text-banner)' : `[data-category="${savedFilter}"]`;
 
-// 1. Isotope SOFORT initialisieren (nicht auf den Download aller Bilder warten!)
-var iso = new Isotope(gallery, {
-    itemSelector: '.item',
-    layoutMode: 'masonry', 
-    percentPosition: true, 
-    transitionDuration: 0, 
-    filter: initialIsotopeFilter,
-    masonry: {
-        columnWidth: '.grid-sizer', 
-        gutter: 0
-    }
-});
-
-// 2. Das Raster bei JEDEM geladenen Bild aktualisieren (verhindert den "Hänger")
-imagesLoaded(gallery).on('progress', function() {
-    iso.layout();
-});
-
-// Die Filter-Buttons beim Laden richtig einfärben
-filterButtons.forEach(btn => {
-    if (btn.getAttribute('data-filter') === savedFilter) {
-        btn.classList.add('active');
-    } else {
-        btn.classList.remove('active');
-    }
-});
-
-const codingBanner = document.getElementById('coding-banner');
-if (codingBanner) {
-    codingBanner.style.display = (savedFilter === 'coding') ? 'block' : 'none';
-}
-
-// Klick-Event für die Filter-Buttons
-filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        const filterValue = button.getAttribute('data-filter');
-        localStorage.setItem('activeFilter', filterValue);
-
-        if (codingBanner) {
-            codingBanner.style.display = (filterValue === 'coding') ? 'block' : 'none';
+    var iso = new Isotope(gallery, {
+        itemSelector: '.item',
+        layoutMode: 'masonry', 
+        percentPosition: true, 
+        transitionDuration: 0, 
+        filter: initialIsotopeFilter,
+        masonry: {
+            columnWidth: '.grid-sizer', 
+            gutter: 0
         }
+    });
 
-        const isotopeFilter = filterValue === 'all' ? '.item:not(.text-banner)' : `[data-category="${filterValue}"]`;
-        iso.arrange({ filter: isotopeFilter });
+    filterButtons.forEach(btn => {
+        if (btn.getAttribute('data-filter') === savedFilter) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    const codingBanner = document.getElementById('coding-banner');
+    if (codingBanner) {
+        codingBanner.style.display = (savedFilter === 'coding') ? 'block' : 'none';
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const filterValue = button.getAttribute('data-filter');
+            localStorage.setItem('activeFilter', filterValue);
+
+            if (codingBanner) {
+                codingBanner.style.display = (filterValue === 'coding') ? 'block' : 'none';
+            }
+
+            const isotopeFilter = filterValue === 'all' ? '.item:not(.text-banner)' : `[data-category="${filterValue}"]`;
+            iso.arrange({ filter: isotopeFilter });
+        });
     });
 });
+
 // --- SEITEN-NAVIGATION --- 
 const navButtons = document.querySelectorAll('.main-nav button');
 
-// Zustand der Haupt-Tabs beim ersten Laden wiederherstellen
 navButtons.forEach(btn => {
     if (btn.getAttribute('data-target') === savedPage) {
         btn.classList.add('active');
@@ -84,7 +76,6 @@ document.querySelectorAll('.page-section').forEach(sec => {
     }
 });
 
-// Klick-Event für die Haupt-Navigation
 navButtons.forEach(button => {
     button.addEventListener('click', () => {
         navButtons.forEach(btn => btn.classList.remove('active'));
@@ -97,7 +88,6 @@ navButtons.forEach(button => {
         const targetId = button.getAttribute('data-target');
         document.getElementById(targetId).classList.add('active');
         
-        // --- NEU: DIE GEWÄHLTE SEITE IM BROWSER SPEICHERN ---
         localStorage.setItem('activePage', targetId);
     });
 });
@@ -176,14 +166,9 @@ const logoLink = document.querySelector('.logo-link');
 
 if (logoLink) {
     logoLink.addEventListener('click', (e) => {
-        // 1. Verhindert fehlerhafte Link-Weiterleitungen bei GitHub
         e.preventDefault(); 
-        
-        // 2. Löscht das Gedächtnis, in welchem Tab du zuletzt warst
         localStorage.removeItem('activeFilter');
         localStorage.removeItem('activePage');
-        
-        // 3. Erzwingt ein sauberes Neuladen der exakten Hauptseite
         window.location.href = window.location.pathname; 
     });
 }
