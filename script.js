@@ -1,62 +1,91 @@
-// PORTFOL// PORTFOLIO FILTER (mit Isotope)
-// Verhindert, dass der Browser sich die Scroll-Position beim Neuladen merkt
+// PORTFOLIO FILTER (mit Isotope)
 if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
 }
-
 window.scrollTo(0, 0); 
+
 const filterButtons = document.querySelectorAll('.filter-menu button');
 const gallery = document.querySelector('.gallery');
+
+// --- NEU: Gespeicherte Werte aus dem Browser laden (oder Standardwerte nutzen) ---
+const savedFilter = localStorage.getItem('activeFilter') || 'all';
+const savedPage = localStorage.getItem('activePage') || 'portfolio';
 
 // alle Bilder/Videos laden
 imagesLoaded(gallery, function() {
     
-    // Isotope initialisieren
+    // Den initialen Filter bauen, basierend auf dem gespeicherten Wert
+    const initialIsotopeFilter = savedFilter === 'all' ? '.item:not(.text-banner)' : `[data-category="${savedFilter}"]`;
+
     // Isotope initialisieren
     var iso = new Isotope(gallery, {
         itemSelector: '.item',
         layoutMode: 'masonry', 
         percentPosition: true, 
         transitionDuration: 0, 
-        filter: '.item:not(.text-banner)', 
+        filter: initialIsotopeFilter, // Nutzt den gespeicherten Zustand!
         masonry: {
-            // NEU: Isotope orientiert sich jetzt immer am Grid-Sizer
             columnWidth: '.grid-sizer', 
             gutter: 0
         }
     });
 
-    // Jedem Filter-Button einen Klick-Befehl geben
+    // Die Filter-Buttons beim Laden richtig einfärben
+    filterButtons.forEach(btn => {
+        if (btn.getAttribute('data-filter') === savedFilter) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Altes Coding-Banner beim Laden prüfen
+    const codingBanner = document.getElementById('coding-banner');
+    if (codingBanner) {
+        codingBanner.style.display = (savedFilter === 'coding') ? 'block' : 'none';
+    }
+
+    // Klick-Event für die Filter-Buttons
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            
-            // 1. "active" Klasse umschalten
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
-            // 2. Filter-Wert auslesen
             const filterValue = button.getAttribute('data-filter');
+            
+            // --- NEU: DEN GEWÄHLTEN FILTER IM BROWSER SPEICHERN ---
+            localStorage.setItem('activeFilter', filterValue);
 
-            // --- BANNER LOGIK ---
-            const codingBanner = document.getElementById('coding-banner');
-            if(codingBanner) {
-                if (filterValue === 'coding') {
-                    codingBanner.style.display = 'block';
-                } else {
-                    codingBanner.style.display = 'none'; 
-                }
+            if (codingBanner) {
+                codingBanner.style.display = (filterValue === 'coding') ? 'block' : 'none';
             }
 
-            // 3. Isotope anweisen
             const isotopeFilter = filterValue === 'all' ? '.item:not(.text-banner)' : `[data-category="${filterValue}"]`;
             iso.arrange({ filter: isotopeFilter });
         });
     });
 });
 
-// Seiten-Navigation 
+// --- SEITEN-NAVIGATION --- 
 const navButtons = document.querySelectorAll('.main-nav button');
 
+// Zustand der Haupt-Tabs beim ersten Laden wiederherstellen
+navButtons.forEach(btn => {
+    if (btn.getAttribute('data-target') === savedPage) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+});
+document.querySelectorAll('.page-section').forEach(sec => {
+    if (sec.id === savedPage) {
+        sec.classList.add('active');
+    } else {
+        sec.classList.remove('active');
+    }
+});
+
+// Klick-Event für die Haupt-Navigation
 navButtons.forEach(button => {
     button.addEventListener('click', () => {
         navButtons.forEach(btn => btn.classList.remove('active'));
@@ -68,12 +97,14 @@ navButtons.forEach(button => {
 
         const targetId = button.getAttribute('data-target');
         document.getElementById(targetId).classList.add('active');
+        
+        // --- NEU: DIE GEWÄHLTE SEITE IM BROWSER SPEICHERN ---
+        localStorage.setItem('activePage', targetId);
     });
 });
 
 // --- VIDEO INTERAKTION ---
 const videoContainers = document.querySelectorAll('.gallery .item:has(video)');
-
 videoContainers.forEach(container => {
     const video = container.querySelector('video');
     if (video) {
@@ -108,7 +139,6 @@ const galleryItems = document.querySelectorAll('.gallery .item');
 
 galleryItems.forEach(item => {
     item.addEventListener('click', () => {
-        // Sicherung: Ignoriere Klicks auf die neuen Trenn-Banner
         if (item.classList.contains('text-banner')) return;
 
         const overlaySpan = item.querySelector('.overlay span');
