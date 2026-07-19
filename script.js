@@ -171,3 +171,20 @@ lightbox.addEventListener('click', (e) => {
         lightboxVideo.src = ''; 
     }
 });
+
+// --- LOGO-LINK SETZT DAS GEDÄCHTNIS ZURÜCK UND STARTET NEU ---
+const logoLink = document.querySelector('.logo-link');
+
+if (logoLink) {
+    logoLink.addEventListener('click', (e) => {
+        // 1. Verhindert fehlerhafte Link-Weiterleitungen bei GitHub
+        e.preventDefault(); 
+        
+        // 2. Löscht das Gedächtnis, in welchem Tab du zuletzt warst
+        localStorage.removeItem('activeFilter');
+        localStorage.removeItem('activePage');
+        
+        // 3. Erzwingt ein sauberes Neuladen der exakten Hauptseite
+        window.location.href = window.location.pathname; 
+    });
+}
